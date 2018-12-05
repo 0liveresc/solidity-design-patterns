@@ -11,8 +11,8 @@ contract User {
     }
     
     modifier isOwner(address _caller) {
-        require(msg.sender == factory);
-        require(_caller == owner);
+        require(msg.sender == factory, "You must be the owner befure using this function");
+        require(_caller == owner, "You must be the owner befure using this function");
         _;
     }
     
@@ -20,7 +20,7 @@ contract User {
         status = true;
     }
     
-    function getStatus() constant external returns (bool) {
+    function getStatus() external view returns (bool) {
         return status;
     }
     
@@ -38,13 +38,11 @@ contract UserFactory {
     function addUser() public {
         require(users[msg.sender] != 0, "You must create a new user before using this function");
         require(User(users[msg.sender]).getStatus() != true, "You can only create one contract per address");
-        
         User(users[msg.sender]).addUser(msg.sender); // set the user's registration status
     }
     
-    function getUserStatus(address _account) public constant returns (bool) { // check the user's registration status
-        if (users[_account] != 0) {
-            return (User(users[_account]).getStatus());
-        }
+    function getUserStatus(address _account) public view returns (bool) { // check the user's registration status
+        require(users[_account] != 0, "Create a user first");
+        return (User(users[_account]).getStatus());
     }
 }
