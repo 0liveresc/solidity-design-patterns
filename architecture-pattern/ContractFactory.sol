@@ -18,13 +18,21 @@ contract CarAsset {
 contract AssetFactory {
     
     address[] carAssets;
-    NameRegistry nr; // create an object of name registry to call its function 
+    NameRegistry nr; // create an object of name registry to call its function
+
+    constructor (address _contractAddress) public {
+        nr = NameRegistry(_contractAddress); // contract address of deployed NameRegistry
+    }
     
-    function createAsset(address _nrAddress, string _ownerName, address _owner, string _brand, string _model) public payable { // create a child contract - *payable, if you want to sell the asset 
+    function createAsset(string _ownerName, address _owner, string _brand, string _model) public payable { // create a child contract - *payable, if you want to sell the asset 
         address newCarAsset = new CarAsset(_owner, _brand, _model);
         carAssets.push(newCarAsset); // push new asset address to array
-        nr = NameRegistry(_nrAddress); // contract address of deployed NameRegistry
         nr.registerName(_ownerName, _owner, newCarAsset); // put data to another contract
+    }
+
+    function getOwnerDetails(string _ownerName) public view returns (address, address) {
+        // fetch owner's address and asset's address
+        return nr.getContractDetails(_ownerName);
     }
 
     function getAllAssets() public view returns (address[]) { // check deployed child contract
