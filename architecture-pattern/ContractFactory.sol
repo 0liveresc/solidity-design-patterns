@@ -30,12 +30,13 @@ contract AssetFactory {
         nr.registerName(_ownerName, _owner, newCarAsset); // put data to another contract
     }
 
-    function getOwnerDetails(string _ownerName) public view returns (address, address) {
+    function getOwnerDetails(address _owner) public view returns (string, address) {
         // fetch owner's address and asset's address
-        return nr.getContractDetails(_ownerName);
+        return nr.getContractDetails(_owner);
     }
 
-    function getAllAssets() public view returns (address[]) { // check deployed child contract
-        return carAssets;
+    function getAllAssets() public view returns (address, string, string) { // check deployed child contract
+        CarAsset ca = CarAsset(carAssets[0]);
+        return (ca.owner(), ca.brand(), ca.model());
     }
 }
