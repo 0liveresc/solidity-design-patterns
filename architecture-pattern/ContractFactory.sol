@@ -4,30 +4,51 @@ import './NameRegistry.sol';
 
 contract CarAsset {
     
-    address public owner;
-    string public brand;
-    string public model;
+    address public owner; // the owner of teh asset
+    string public assetName; // type of asset
+    string public desc; // description
     
-    constructor (address _address, string _brand, string _model) public {
+    constructor (address _address, string _assetname, string _desc) public {
         owner = _address;
-        brand = _brand;
-        model = _model;
+        assetName = _assetName;
+        desc = _desc;
     }
 }
 
 contract AssetFactory {
     
-    address[] carAssets;
+    /*struct AssetList {
+        address contractAddress;
+    }*/
+    //mapping(address => AssetList) assetLists;
+
+    //address[] carAssets;
+    address owner;
     NameRegistry nr; // create an object of name registry to call its function
 
     constructor (address _contractAddress) public {
         nr = NameRegistry(_contractAddress); // contract address of deployed NameRegistry
+        owner = msg.sender;
+    }
+
+    modifier onlyOwner() { // access restriction
+        require(msg.sender == owner, "No authorized.");
+        _;
     }
     
     function createAsset(string _ownerName, address _owner, string _brand, string _model) public payable { // create a child contract - *payable, if you want to sell the asset 
-        address newCarAsset = new CarAsset(_owner, _brand, _model);
-        carAssets.push(newCarAsset); // push new asset address to array
-        nr.registerName(_ownerName, _owner, newCarAsset); // put data to another contract
+        address newAsset = new Asset(_owner, _AssetName, _desc);
+        /*AssetList memory asl = assetLists[_owner];
+        asl = AssetList({
+            contractAddress: newAsset
+        });
+        assetLists[_owner] = asl;*/
+        //Assets.push(newAsset); // push new asset address to array
+        nr.registerName(_ownerName, _owner, newAsset); // put data to another contract
+    }
+
+    function transferAsset(address _owner, string _newAssetOwner) public {
+        nr.updateName(_owner, _newAssetOwner);
     }
 
     function getOwnerDetails(address _owner) public view returns (string, address) {
@@ -35,8 +56,9 @@ contract AssetFactory {
         return nr.getContractDetails(_owner);
     }
 
-    function getAllAssets() public view returns (address, string, string) { // check deployed child contract
-        CarAsset ca = CarAsset(carAssets[0]);
-        return (ca.owner(), ca.brand(), ca.model());
-    }
+    /*function getAllAssets() public view returns (address, string, string) { // check deployed child contract
+        //Asset myAsset = Asset(Assets[0]);
+        //return (myAsset.owner(), myAsset.assetName(), myAsset.desc());
+        return assetLists[owner].contractAddress;
+    }*/
 }
